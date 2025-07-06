@@ -1,0 +1,48 @@
+# Docker Compose para Sistema de Gerenciamento Imobiliário
+# Imobiliária 3 Irmãos - 2025
+# Autores: Felipe Marques, Nicolas Bruno, Heitor Moreira
+
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: imobiliaria_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: Imobiliaria
+      MYSQL_USER: imobiliaria_user
+      MYSQL_PASSWORD: imobiliaria_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - imobiliaria_network
+
+  web:
+    build: .
+    container_name: imobiliaria_web
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: Imobiliaria
+      DB_USER: imobiliaria_user
+      DB_PASS: imobiliaria_pass
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: imobiliaria-3-irmaos-secret-key-2025
+    ports:
+      - "3000:3000"
+    networks:
+      - imobiliaria_network
+
+volumes:
+  mysql_data:
+
+networks:
+  imobiliaria_network:
+    driver: bridge
